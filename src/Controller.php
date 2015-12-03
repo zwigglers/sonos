@@ -174,7 +174,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function setState($state)
+    public function setState(int $state)
     {
         switch ($state) {
             case self::STATE_PLAYING:
@@ -256,7 +256,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function selectTrack($position)
+    public function selectTrack(int $position)
     {
         $this->soap("AVTransport", "Seek", [
             "Unit"      =>  "TRACK_NR",
@@ -274,7 +274,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function seek($seconds)
+    public function seek(int $seconds)
     {
         $minutes = floor($seconds / 60);
         $seconds = $seconds % 60;
@@ -460,7 +460,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function setVolume($volume)
+    public function setVolume(int $volume)
     {
         $speakers = $this->getSpeakers();
         foreach ($speakers as $speaker) {
@@ -478,7 +478,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function adjustVolume($adjust)
+    public function adjustVolume(int $adjust)
     {
         $speakers = $this->getSpeakers();
         foreach ($speakers as $speaker) {
@@ -525,7 +525,7 @@ class Controller extends Speaker
      *
      * @return bool
      */
-    protected function getPlayMode($type)
+    protected function getPlayMode(string $type)
     {
         $mode = $this->getMode();
         return $mode[$type];
@@ -540,7 +540,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    protected function setPlayMode($type, $value)
+    protected function setPlayMode(string $type, bool $value)
     {
         $value = (bool) $value;
 
@@ -574,7 +574,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function setRepeat($repeat)
+    public function setRepeat(bool $repeat)
     {
         return $this->setPlayMode("repeat", $repeat);
     }
@@ -598,7 +598,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function setShuffle($shuffle)
+    public function setShuffle(bool $shuffle)
     {
         return $this->setPlayMode("shuffle", $shuffle);
     }
@@ -622,7 +622,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function setCrossfade($crossfade)
+    public function setCrossfade(bool $crossfade)
     {
         $this->soap("AVTransport", "SetCrossfadeMode", [
             "CrossfadeMode" =>  (bool) $crossfade,
@@ -650,7 +650,7 @@ class Controller extends Speaker
      *
      * @return ControllerState
      */
-    public function exportState($pause = true)
+    public function exportState(bool $pause = true)
     {
         if ($pause) {
             $state = $this->getState();
@@ -736,7 +736,7 @@ class Controller extends Speaker
      *
      * @return static
      */
-    public function interrupt(UriInterface $track, $volume = null)
+    public function interrupt(UriInterface $track, int $volume = null)
     {
         /**
          * Ensure the track has been generated.
