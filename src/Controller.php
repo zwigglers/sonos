@@ -6,6 +6,7 @@ use duncan3dc\DomParser\XmlParser;
 use duncan3dc\Sonos\Exceptions\SoapException;
 use duncan3dc\Sonos\Tracks\Stream;
 use duncan3dc\Sonos\Tracks\UriInterface;
+use duncan3dc\Sonos\Utils\Time;
 
 /**
  * Allows interaction with the groups of speakers.
@@ -155,8 +156,8 @@ class Controller extends Speaker
         }
 
         $state->queueNumber = (int) $data["Track"];
-        $state->duration = $data["TrackDuration"];
-        $state->position = $data["RelTime"];
+        $state->duration = Time::fromString($data["TrackDuration"]);
+        $state->position = Time::fromString($data["RelTime"]);
 
         # If we have a queue number, it'll be one-based, rather than zero-based, so convert it
         if ($state->queueNumber > 0) {
@@ -270,20 +271,15 @@ class Controller extends Speaker
     /**
      * Seeks to a specific position within the current track.
      *
-     * @param int $seconds The number of seconds to position to in the track
+     * @param Time $position The position to seek to in the track
      *
      * @return self
      */
-    public function seek(int $seconds): self
+    public function seek(Time $position): self
     {
-        $minutes = floor($seconds / 60);
-        $seconds = $seconds % 60;
-        $hours = floor($minutes / 60);
-        $minutes = $minutes % 60;
-
         $this->soap("AVTransport", "Seek", [
             "Unit"      =>  "REL_TIME",
-            "Target"    =>  sprintf("%02s:%02s:%02s", $hours, $minutes, $seconds),
+            "Target"    =>  $position->asString(),
         ]);
 
         return $this;
@@ -687,9 +683,8 @@ class Controller extends Speaker
         if (count($state->tracks) > 0) {
             $this->selectTrack($state->track);
 
-            list($hours, $minutes, $seconds) = explode(":", $state->position);
-            $time = ((($hours * 60) + $minutes) * 60) + $seconds;
-            $this->seek($time);
+            $time = Time::fromString($state->position);
+            $this->seek($time->asInt());
         }
 
         $this->setShuffle($state->shuffle);
