@@ -4,6 +4,7 @@ namespace duncan3dc\Sonos;
 
 use Psr\Cache\CacheItemPoolInterface as CacheInterface;
 use duncan3dc\DomParser\XmlParser;
+use duncan3dc\Sonos\Interfaces\DeviceCollectionInterface;
 use duncan3dc\Sonos\Interfaces\SpeakerInterface;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerAwareInterface;
@@ -13,7 +14,7 @@ use Psr\Log\NullLogger;
 /**
  * Manage a group of devices.
  */
-class DeviceCollection implements LoggerAwareInterface
+class DeviceCollection implements DeviceCollectionInterface
 {
     const CACHE_KEY = "device-ip-addresses-2.0.0";
 
@@ -80,12 +81,17 @@ class DeviceCollection implements LoggerAwareInterface
      *
      * @return LoggerInterface $logger The logging object
      */
-    public function getLogger()
+    public function getLogger(): LoggerInterface
     {
         return $this->logger;
     }
 
 
+    /**
+     * Get all the devices from this collection.
+     *
+     * @return Device[]
+     */
     public function getDevices(): array
     {
         if (count($this->addresses) < 1) {
@@ -113,9 +119,9 @@ class DeviceCollection implements LoggerAwareInterface
      *
      * @var string|int $networkInterface The interface to use
      *
-     * @return static
+     * @return self
      */
-    public function setNetworkInterface($networkInterface)
+    public function setNetworkInterface($networkInterface): DeviceCollectionInterface
     {
         $this->networkInterface = $networkInterface;
 
@@ -218,7 +224,14 @@ class DeviceCollection implements LoggerAwareInterface
     }
 
 
-    public function addIp(string $ip): self
+    /**
+     * Add an ip address to the cache of the collection.
+     *
+     * @param string $ip The address to add
+     *
+     * @return self
+     */
+    public function addIp(string $ip): DeviceCollectionInterface
     {
         if (!in_array($ip, $this->addresses, true)) {
             $this->addresses[] = $ip;
@@ -232,7 +245,12 @@ class DeviceCollection implements LoggerAwareInterface
     }
 
 
-    public function clear(): self
+    /**
+     * Empty the collection.
+     *
+     * @return self
+     */
+    public function clear(): DeviceCollectionInterface
     {
         $this->addresses = [];
 
@@ -297,7 +315,7 @@ class DeviceCollection implements LoggerAwareInterface
      *
      * @return self
      */
-    public function clearTopology(): self
+    public function clearTopology(): DeviceCollectionInterface
     {
         $this->speakers = null;
 

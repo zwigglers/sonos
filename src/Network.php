@@ -4,6 +4,7 @@ namespace duncan3dc\Sonos;
 
 use duncan3dc\DomParser\XmlParser;
 use duncan3dc\Sonos\Interfaces\ControllerInterface;
+use duncan3dc\Sonos\Interfaces\DeviceCollectionInterface;
 use duncan3dc\Sonos\Interfaces\SpeakerInterface;
 use duncan3dc\Sonos\Services\Radio;
 use Psr\Log\LoggerAwareInterface;
@@ -15,7 +16,7 @@ use Psr\Log\LoggerInterface;
 class Network implements LoggerAwareInterface
 {
     /**
-     * @var DeviceCollection $collection The collection of devices on the network.
+     * @var DeviceCollectionInterface $collection The collection of devices on the network.
      */
     protected $collection;
 
@@ -33,9 +34,9 @@ class Network implements LoggerAwareInterface
     /**
      * Create a new instance.
      *
-     * @param DeviceCollection $collection The collection of devices on this network
+     * @param DeviceCollectionInterface $collection The collection of devices on this network
      */
-    public function __construct(DeviceCollection $collection = null)
+    public function __construct(DeviceCollectionInterface $collection = null)
     {
         if ($collection === null) {
             $collection = new DeviceCollection;
