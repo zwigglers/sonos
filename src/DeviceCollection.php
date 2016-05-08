@@ -4,6 +4,7 @@ namespace duncan3dc\Sonos;
 
 use Psr\Cache\CacheItemPoolInterface as CacheInterface;
 use duncan3dc\DomParser\XmlParser;
+use duncan3dc\Sonos\Interfaces\SpeakerInterface;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -24,7 +25,7 @@ class DeviceCollection implements LoggerAwareInterface
     protected $networkInterface;
 
     /**
-     * @var Speaker[]|null $speakers Speakers that are available on the current network.
+     * @var SpeakerInterface[]|null $speakers Speakers that are available on the current network.
      */
     protected $speakers;
 
@@ -242,7 +243,7 @@ class DeviceCollection implements LoggerAwareInterface
     /**
      * Get all the speakers for these devices.
      *
-     * @return Speaker[]
+     * @return SpeakerInterface[]
      */
     public function getSpeakers(): array
     {

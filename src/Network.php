@@ -3,6 +3,7 @@
 namespace duncan3dc\Sonos;
 
 use duncan3dc\DomParser\XmlParser;
+use duncan3dc\Sonos\Interfaces\SpeakerInterface;
 use duncan3dc\Sonos\Services\Radio;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -71,7 +72,7 @@ class Network implements LoggerAwareInterface
     /**
      * Get all the speakers on the network.
      *
-     * @return Speaker[]
+     * @return SpeakerInterface[]
      */
     public function getSpeakers(): array
     {
@@ -113,13 +114,13 @@ class Network implements LoggerAwareInterface
      *
      * @param string $room The name of the room to look for
      *
-     * @return Speaker|null
+     * @return SpeakerInterface|null
      */
-    public function getSpeakerByRoom(string $room): Speaker
+    public function getSpeakerByRoom(string $room): SpeakerInterface
     {
         $speakers = $this->getSpeakers();
         foreach ($speakers as $speaker) {
-            if ($speaker->room === $room) {
+            if ($speaker->getRoom() === $room) {
                 return $speaker;
             }
         }
@@ -131,7 +132,7 @@ class Network implements LoggerAwareInterface
      *
      * @param string $room The name of the room to look for
      *
-     * @return Speaker[]
+     * @return SpeakerInterface[]
      */
     public function getSpeakersByRoom(string $room): array
     {
@@ -139,7 +140,7 @@ class Network implements LoggerAwareInterface
 
         $speakers = $this->getSpeakers();
         foreach ($speakers as $controller) {
-            if ($controller->room === $room) {
+            if ($controller->getRoom() === $room) {
                 $return[] = $controller;
             }
         }
@@ -162,7 +163,8 @@ class Network implements LoggerAwareInterface
             if (!$speaker->isCoordinator()) {
                 continue;
             }
-            $controllers[$speaker->ip] = new Controller($speaker, $this);
+            $ip = $speaker->getIP();
+            $controllers[$ip] = new Controller($speaker, $this);
         }
 
         return $controllers;
