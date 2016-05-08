@@ -4,7 +4,6 @@ namespace duncan3dc\Sonos;
 
 use duncan3dc\DomParser\XmlElement;
 use duncan3dc\DomParser\XmlParser;
-use duncan3dc\Sonos\Interfaces\ControllerInterface;
 use duncan3dc\Sonos\Interfaces\UriInterface;
 
 /**
@@ -22,9 +21,9 @@ class Playlist extends Queue
      * Create an instance of the Playlist class.
      *
      * @param string|XmlElement $param The id of the playlist, or an xml element with the relevant attributes
-     * @param ControllerInterface $controller A controller instance on the playlist's network
+     * @param Controller $controller A controller instance on the playlist's network
      */
-    public function __construct($param, ControllerInterface $controller)
+    public function __construct($param, Controller $controller)
     {
         parent::__construct($controller);
 

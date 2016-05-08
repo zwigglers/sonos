@@ -4,8 +4,10 @@ namespace duncan3dc\Sonos;
 
 use duncan3dc\DomParser\XmlParser;
 use duncan3dc\Sonos\Exceptions\SoapException;
+use duncan3dc\Sonos\Interfaces\ControllerInterface;
+use duncan3dc\Sonos\Interfaces\SpeakerInterface;
+use duncan3dc\Sonos\Interfaces\UriInterface;
 use duncan3dc\Sonos\Tracks\Stream;
-use duncan3dc\Sonos\Tracks\UriInterface;
 use duncan3dc\Sonos\Utils\Time;
 
 /**
@@ -13,40 +15,8 @@ use duncan3dc\Sonos\Utils\Time;
  *
  * Although sometimes a Controller is synonymous with a Speaker, when speakers are grouped together only the coordinator can receive events (play/pause/etc)
  */
-class Controller extends Speaker
+class Controller extends Speaker implements ControllerInterface
 {
-    /**
-     * No music playing, but not paused.
-     *
-     * This is a rare state, but can be encountered after an upgrade, or if the queue was cleared
-     */
-    const STATE_STOPPED = 201;
-
-    /**
-     * Currently plating music.
-     */
-    const STATE_PLAYING = 202;
-
-    /**
-     * Music is currently paused.
-     */
-    const STATE_PAUSED = 203;
-
-    /**
-     * The speaker is currently working on either playing or pausing.
-     *
-     * Check it's state again in a second or two
-     */
-    const STATE_TRANSITIONING = 204;
-
-    /**
-     * The speaker is in an unknown state.
-     *
-     * This should only happen if Sonos introduce a new state that this code has not been updated to handle.
-     */
-    const STATE_UNKNOWN = 205;
-
-
     /**
      * @var Network $network The network instance this Controller is part of.
      */
@@ -58,9 +28,9 @@ class Controller extends Speaker
      *
      * The speaker must be a coordinator.
      *
-     * @param Speaker $speaker
+     * @param SpeakerInterface $speaker
      */
-    public function __construct(Speaker $speaker, Network $network)
+    public function __construct(SpeakerInterface $speaker, Network $network)
     {
         if (!$speaker->isCoordinator()) {
             throw new \InvalidArgumentException("You cannot create a Controller instance from a Speaker that is not the coordinator of it's group");
@@ -79,7 +49,7 @@ class Controller extends Speaker
     /**
      * Check if this speaker is the coordinator of it's current group.
      *
-     * This method is only here to override the method from the Speaker class.
+     * This method is only here to override the method from the SpeakerInterface class.
      * A Controller instance is always the coordinator of it's group.
      *
      * @return bool
@@ -175,7 +145,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function setState(int $state): self
+    public function setState(int $state): ControllerInterface
     {
         switch ($state) {
             case self::STATE_PLAYING:
@@ -194,7 +164,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function play(): self
+    public function play(): ControllerInterface
     {
         try {
             $this->soap("AVTransport", "Play", [
@@ -216,7 +186,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function pause(): self
+    public function pause(): ControllerInterface
     {
         $this->soap("AVTransport", "Pause");
 
@@ -229,7 +199,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function next(): self
+    public function next(): ControllerInterface
     {
         $this->soap("AVTransport", "Next");
 
@@ -242,7 +212,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function previous(): self
+    public function previous(): ControllerInterface
     {
         $this->soap("AVTransport", "Previous");
 
@@ -257,7 +227,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function selectTrack(int $position): self
+    public function selectTrack(int $position): ControllerInterface
     {
         $this->soap("AVTransport", "Seek", [
             "Unit"      =>  "TRACK_NR",
@@ -275,7 +245,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function seek(Time $position): self
+    public function seek(Time $position): ControllerInterface
     {
         $this->soap("AVTransport", "Seek", [
             "Unit"      =>  "REL_TIME",
@@ -329,7 +299,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function useStream(Stream $stream): self
+    public function useStream(Stream $stream): ControllerInterface
     {
         $this->soap("AVTransport", "SetAVTransportURI", [
             "CurrentURI"            =>  $stream->getUri(),
@@ -345,11 +315,11 @@ class Controller extends Speaker
      *
      * If no speaker is passed then the current controller's is used.
      *
-     * @param Speaker|null $speaker The speaker to get the line-in from
+     * @param SpeakerInterface|null $speaker The speaker to get the line-in from
      *
      * @return static
      */
-    public function useLineIn(Speaker $speaker = null)
+    public function useLineIn(SpeakerInterface $speaker = null)
     {
         if ($speaker === null) {
             $speaker = $this;
@@ -380,7 +350,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function useQueue(): self
+    public function useQueue(): ControllerInterface
     {
         $this->soap("AVTransport", "SetAVTransportURI", [
             "CurrentURI"            =>  "x-rincon-queue:" . $this->getUuid() . "#0",
@@ -394,7 +364,7 @@ class Controller extends Speaker
     /**
      * Get the speakers that are in the group of this controller.
      *
-     * @return Speaker[]
+     * @return SpeakerInterface[]
      */
     public function getSpeakers(): array
     {
@@ -412,11 +382,11 @@ class Controller extends Speaker
     /**
      * Adds the specified speaker to the group of this Controller.
      *
-     * @param Speaker $speaker The speaker to add to the group
+     * @param SpeakerInterface $speaker The speaker to add to the group
      *
      * @return self
      */
-    public function addSpeaker(Speaker $speaker): self
+    public function addSpeaker(SpeakerInterface $speaker): ControllerInterface
     {
         if ($speaker->getUuid() === $this->getUuid()) {
             return $this;
@@ -435,11 +405,11 @@ class Controller extends Speaker
     /**
      * Removes the specified speaker from the group of this Controller.
      *
-     * @param Speaker $speaker The speaker to remove from the group
+     * @param SpeakerInterface $speaker The speaker to remove from the group
      *
      * @return self
      */
-    public function removeSpeaker(Speaker $speaker): self
+    public function removeSpeaker(SpeakerInterface $speaker): ControllerInterface
     {
         $speaker->soap("AVTransport", "BecomeCoordinatorOfStandaloneGroup");
 
@@ -456,7 +426,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function setVolume(int $volume): self
+    public function setVolume(int $volume): SpeakerInterface
     {
         $speakers = $this->getSpeakers();
         foreach ($speakers as $speaker) {
@@ -474,7 +444,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function adjustVolume(int $adjust): self
+    public function adjustVolume(int $adjust): SpeakerInterface
     {
         $speakers = $this->getSpeakers();
         foreach ($speakers as $speaker) {
@@ -504,7 +474,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function setMode(array $options): self
+    public function setMode(array $options): ControllerInterface
     {
         $this->soap("AVTransport", "SetPlayMode", [
             "NewPlayMode"   =>  Helper::setMode($options),
@@ -536,7 +506,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    protected function setPlayMode(string $type, bool $value): self
+    protected function setPlayMode(string $type, bool $value): ControllerInterface
     {
         $value = (bool) $value;
 
@@ -570,7 +540,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function setRepeat(bool $repeat): self
+    public function setRepeat(bool $repeat): ControllerInterface
     {
         return $this->setPlayMode("repeat", $repeat);
     }
@@ -594,7 +564,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function setShuffle(bool $shuffle): self
+    public function setShuffle(bool $shuffle): ControllerInterface
     {
         return $this->setPlayMode("shuffle", $shuffle);
     }
@@ -618,7 +588,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function setCrossfade(bool $crossfade): self
+    public function setCrossfade(bool $crossfade): ControllerInterface
     {
         $this->soap("AVTransport", "SetCrossfadeMode", [
             "CrossfadeMode" =>  (bool) $crossfade,
@@ -672,7 +642,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function restoreState(ControllerState $state): self
+    public function restoreState(ControllerState $state): ControllerInterface
     {
         $queue = $this->getQueue();
         $queue->clear();
@@ -731,7 +701,7 @@ class Controller extends Speaker
      *
      * @return self
      */
-    public function interrupt(UriInterface $track, int $volume = null): self
+    public function interrupt(UriInterface $track, int $volume = null): ControllerInterface
     {
         /**
          * Ensure the track has been generated.

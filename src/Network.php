@@ -3,6 +3,9 @@
 namespace duncan3dc\Sonos;
 
 use duncan3dc\DomParser\XmlParser;
+use duncan3dc\Sonos\Interfaces\ControllerInterface;
+use duncan3dc\Sonos\Interfaces\DeviceCollectionInterface;
+use duncan3dc\Sonos\Interfaces\SpeakerInterface;
 use duncan3dc\Sonos\Services\Radio;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
@@ -13,7 +16,7 @@ use Psr\Log\LoggerInterface;
 class Network implements LoggerAwareInterface
 {
     /**
-     * @var DeviceCollection $collection The collection of devices on the network.
+     * @var DeviceCollectionInterface $collection The collection of devices on the network.
      */
     protected $collection;
 
@@ -31,9 +34,9 @@ class Network implements LoggerAwareInterface
     /**
      * Create a new instance.
      *
-     * @param DeviceCollection $collection The collection of devices on this network
+     * @param DeviceCollectionInterface $collection The collection of devices on this network
      */
-    public function __construct(DeviceCollection $collection = null)
+    public function __construct(DeviceCollectionInterface $collection = null)
     {
         if ($collection === null) {
             $collection = new DeviceCollection;
@@ -71,7 +74,7 @@ class Network implements LoggerAwareInterface
     /**
      * Get all the speakers on the network.
      *
-     * @return Speaker[]
+     * @return SpeakerInterface[]
      */
     public function getSpeakers(): array
     {
@@ -97,9 +100,9 @@ class Network implements LoggerAwareInterface
      *
      * Useful for managing playlists/alarms, as these need a controller but it doesn't matter which one.
      *
-     * @return Controller|null
+     * @return ControllerInterface|null
      */
-    public function getController(): Controller
+    public function getController(): ControllerInterface
     {
         $controllers = $this->getControllers();
         if ($controller = reset($controllers)) {
@@ -113,13 +116,13 @@ class Network implements LoggerAwareInterface
      *
      * @param string $room The name of the room to look for
      *
-     * @return Speaker|null
+     * @return SpeakerInterface|null
      */
-    public function getSpeakerByRoom(string $room): Speaker
+    public function getSpeakerByRoom(string $room): SpeakerInterface
     {
         $speakers = $this->getSpeakers();
         foreach ($speakers as $speaker) {
-            if ($speaker->room === $room) {
+            if ($speaker->getRoom() === $room) {
                 return $speaker;
             }
         }
@@ -131,7 +134,7 @@ class Network implements LoggerAwareInterface
      *
      * @param string $room The name of the room to look for
      *
-     * @return Speaker[]
+     * @return SpeakerInterface[]
      */
     public function getSpeakersByRoom(string $room): array
     {
@@ -139,7 +142,7 @@ class Network implements LoggerAwareInterface
 
         $speakers = $this->getSpeakers();
         foreach ($speakers as $controller) {
-            if ($controller->room === $room) {
+            if ($controller->getRoom() === $room) {
                 $return[] = $controller;
             }
         }
@@ -151,7 +154,7 @@ class Network implements LoggerAwareInterface
     /**
      * Get all the coordinators on the network.
      *
-     * @return Controller[]
+     * @return ControllerInterface[]
      */
     public function getControllers(): array
     {
@@ -162,7 +165,8 @@ class Network implements LoggerAwareInterface
             if (!$speaker->isCoordinator()) {
                 continue;
             }
-            $controllers[$speaker->ip] = new Controller($speaker, $this);
+            $ip = $speaker->getIP();
+            $controllers[$ip] = new Controller($speaker, $this);
         }
 
         return $controllers;
@@ -174,9 +178,9 @@ class Network implements LoggerAwareInterface
      *
      * @param string $room The name of the room to look for
      *
-     * @return Controller|null
+     * @return ControllerInterface|null
      */
-    public function getControllerByRoom(string $room): Controller
+    public function getControllerByRoom(string $room): ControllerInterface
     {
         if (!$speaker = $this->getSpeakerByRoom($room)) {
             return;
@@ -198,9 +202,9 @@ class Network implements LoggerAwareInterface
      *
      * @param string $ip The ip address of the speaker
      *
-     * @return Controller|null
+     * @return ControllerInterface|null
      */
-    public function getControllerByIp(string $ip): Controller
+    public function getControllerByIp(string $ip): ControllerInterface
     {
         $speakers = $this->getSpeakers();
         if (!array_key_exists($ip, $speakers)) {

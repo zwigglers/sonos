@@ -3,7 +3,7 @@
 namespace duncan3dc\Sonos\Tracks;
 
 use duncan3dc\DomParser\XmlElement;
-use duncan3dc\Sonos\Interfaces\ControllerInterface;
+use duncan3dc\Sonos\Controller;
 
 /**
  * Factory for creating Track instances.
@@ -11,7 +11,7 @@ use duncan3dc\Sonos\Interfaces\ControllerInterface;
 class Factory
 {
     /**
-     * @var ControllerInterface $controller A Controller instance to communicate with.
+     * @var Controller $controller A Controller instance to communicate with.
      */
     protected $controller;
 
@@ -19,9 +19,9 @@ class Factory
     /**
      * Create an instance of the Factory class.
      *
-     * @param ControllerInterface $controller A Controller instance to communicate with
+     * @param Controller $controller A Controller instance to communicate with
      */
-    public function __construct(ControllerInterface $controller)
+    public function __construct(Controller $controller)
     {
         $this->controller = $controller;
     }

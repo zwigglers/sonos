@@ -3,8 +3,8 @@
 namespace duncan3dc\Sonos\Tracks;
 
 use duncan3dc\DomParser\XmlElement;
+use duncan3dc\Sonos\Controller;
 use duncan3dc\Sonos\Helper;
-use duncan3dc\Sonos\Interfaces\ControllerInterface;
 use duncan3dc\Sonos\Interfaces\UriInterface;
 
 /**
@@ -103,11 +103,11 @@ class Track implements UriInterface
      * Update the track properties using an xml element.
      *
      * @param XmlElement $xml The xml element representing the track meta data
-     * @param ControllerInterface $controller A controller instance to communicate with
+     * @param Controller $controller A controller instance to communicate with
      *
      * @return self
      */
-    public static function createFromXml(XmlElement $xml, ControllerInterface $controller): self
+    public static function createFromXml(XmlElement $xml, Controller $controller): self
     {
         $track = new static($xml->getTag("res"));
 
@@ -132,7 +132,7 @@ class Track implements UriInterface
         if ($art = (string) $xml->getTag("albumArtURI")) {
             if (substr($art, 0, 4) !== "http") {
                 $art = ltrim($art, "/");
-                $art = sprintf("http://%s:1400/%s", $controller->getIP(), $art);
+                $art = sprintf("http://%s:1400/%s", $controller->ip, $art);
             }
             $track->albumArt = $art;
         }
