@@ -39,6 +39,7 @@ class Factory
         $classes = [
             Spotify::class,
             Google::class,
+            Google2::class,
             Deezer::class,
             Stream::class,
         ];
